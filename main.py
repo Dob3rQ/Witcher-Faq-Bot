@@ -1,20 +1,24 @@
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
-from database import get_answer
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from wiki_scraper import find_best_wikipedia_article
 from config import TOKEN
+from telegram.constants import ChatAction
 
-async def start(update: Update):
-    await update.message.reply_text("Привет! Я FAQ-бот по Ведьмаку. Задай мне вопрос!")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Привет! Я FAQ-бот. Спрашивай что угодно, и я найду ответ в Википедии!")
 
-async def handle_question(update: Update):
+async def handle_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_question = update.message.text.strip()
-    answer = get_answer(user_question)
 
-    if answer:
-        await update.message.reply_text(answer)
+    # Показываем анимацию "бот печатает..."
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+
+    summary, url = find_best_wikipedia_article(user_question)
+
+    if summary and url:
+        await update.message.reply_text(f"{summary}\n\n[Читать дальше]({url})", parse_mode="Markdown")
     else:
-        await update.message.reply_text("Я пока на стадии зародыша и не знаю всех ответов, но я учусь."
-                                        "Пожалуйста, прости меня и задай другой вопрос.")
+        await update.message.reply_text("Я не смог найти точный ответ, попробуй переформулировать вопрос.")
 
 def main():
     app = Application.builder().token(TOKEN).build()
