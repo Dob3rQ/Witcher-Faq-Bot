@@ -1,4 +1,4 @@
-# FAQ Telegram Bot
+# FAQ Telegram Bot (not full)
 
 Этот проект представляет собой Telegram-бота, который отвечает на вопросы, используя базу данных FAQ. Бот создан на Python с использованием библиотеки `python-telegram-bot` и базы данных SQLite.
 
